@@ -1,12 +1,18 @@
 {
-  "domain": "integration_blueprint",
-  "name": "Integration blueprint",
+  "domain": "recteq",
+  "name": "Recteq",
   "codeowners": [
-    "@ludeeus"
+    "@jls901"
   ],
   "config_flow": true,
   "documentation": "https://github.com/ludeeus/integration_blueprint",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/ludeeus/integration_blueprint/issues",
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "requirements": [
+    "tinytuya",
+    "integrationhelper",
+    "voluptuous",
+    "asyncio"
+  ]
 }
