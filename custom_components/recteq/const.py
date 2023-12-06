@@ -9,18 +9,17 @@ PROJECT = "Recteq Custom Integration"
 VERSION_TUPLE = (0, 0, 0)
 VERSION = __version__ = '%d.%d.%d' % VERSION_TUPLE
 
-__author__ = 'Paul Dugas <paul@dugas.cc>'
+__author__ = 'James Smith <>'
 
-ISSUE_LINK = 'https://github.com/pdugas/homeassistant-recteq/issues'
+ISSUE_LINK = ''
 
 DOMAIN = 'recteq'
 
-#PLATFORMS = ["switch", "sensor", "binary_sensor"]
-PLATFORMS = ["switch"]
+PLATFORMS = ["switch", "climate", "sensor"]
 
 DPS_POWER  = '1'
-DPS_TARGET = '102'
-DPS_ACTUAL = '103'
+DPS_TARGET = '101'
+DPS_ACTUAL = '102'
 DPS_PROBEA = '105'
 DPS_PROBEB = '106'
 DPS_ERROR1 = '109'

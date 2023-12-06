@@ -3,6 +3,8 @@
 import logging
 
 from .const import (
+    CONF_LOCAL_KEY,
+    CONF_NAME,
     DOMAIN,
     DPS_ACTUAL,
     DPS_POWER,
@@ -10,16 +12,14 @@ from .const import (
     POWER_OFF,
     POWER_ON,
 )
-from .device import RecteqDevice
+
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity
+)
 
 from homeassistant.components import climate
 from homeassistant.components.climate.const import (
-    ATTR_CURRENT_TEMPERATURE,
     ATTR_HVAC_MODE,
-    ATTR_HVAC_MODES,
-    ATTR_MAX_TEMP,
-    ATTR_MIN_TEMP,
-    ATTR_TARGET_TEMP_STEP,
     HVAC_MODE_HEAT,
     HVAC_MODE_OFF,
     SUPPORT_TARGET_TEMPERATURE,
@@ -27,9 +27,7 @@ from homeassistant.components.climate.const import (
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     PRECISION_WHOLE,
-    STATE_UNAVAILABLE,
-    TEMP_CELSIUS,
-    TEMP_FAHRENHEIT,
+    UnitOfTemperature
 )
 from homeassistant.core import callback
 from homeassistant.util.unit_system import IMPERIAL_SYSTEM, METRIC_SYSTEM
@@ -39,51 +37,54 @@ _LOGGER = logging.getLogger(__name__)
 ICON = 'mdi:grill'
 
 TEMP_MIN = 200
-TEMP_MAX = 500
-
-# TODO Support "Max Smoke" Mode
-#   The recteq app sets the target temperature to this value when it's on
-#   TEMP_MIN and the user taps the "-" button one more time.
-TEMP_SMOKE = 180
-
-# TODO Support "Full" Mode
-#   The recteq app sets the target temperature to this value when it's on
-#   TEMP_MAX and the user taps the "+" button one more time.
-TEMP_FULL  = 600
+TEMP_MAX = 700
 
 async def async_setup_entry(hass, entry, add):
-    device = hass.data[DOMAIN][entry.entry_id]
-    add([RecteqClimate(device)])
+    coordinator = hass.data[DOMAIN][entry.entry_id]
+    add([RecteqClimate(coordinator, hass,
+            entry.data.get(CONF_NAME, DOMAIN + '_' + entry.data.get(CONF_LOCAL_KEY))
+    )])
 
-class RecteqClimate(climate.ClimateEntity):
+class RecteqClimate(CoordinatorEntity, climate.ClimateEntity):
 
-    def __init__(self, device: RecteqDevice):
-        super().__init__()
-        self._device = device
-
-    @property
-    def name(self):
-        return self._device.name
+    def __init__(self, coordinator, hass, name):
+        super().__init__(coordinator)
+        self._coordinator = coordinator
+        self._device = coordinator.grill_device
+        self._name = f"{self._device.name} Climate"
+        self._units = hass.config.units
+        self._hass = hass
+        self._grill_data = self._coordinator.data
+        self._attr_available = bool(self._grill_data) or False
 
     @property
     def unique_id(self):
-        return self._device._outlet._device_id
+         return f"{self._device.unique_id}.climate"
+
+    @property
+    def device_info(self) -> {}:
+        return {
+            "identifiers": {
+                (DOMAIN, self._device.unique_id)
+            },
+            "name": self._device.name,
+        }
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def icon(self):
         return ICON
 
     @property
-    def available(self):
-        return self._device._outlet.available
-
-    @property
     def precision(self):
         return PRECISION_WHOLE
 
-    # @property
-    # def temperature_unit(self):
-    #     return self._device.temperature_unit
+    @property
+    def temperature_unit(self):
+        return self._units.temperature_unit
 
     @property
     def hvac_mode(self):
@@ -98,21 +99,19 @@ class RecteqClimate(climate.ClimateEntity):
 
     @property
     def current_temperature(self):
-        temp = self._device._outlet.dps(DPS_ACTUAL)
-        if temp == None:
-            return None
-        return temp #round(float(self._device._outlet.temperature(temp)), 1)
+        if self._grill_data and self.is_on:
+            temp = self._grill_data["dps"][DPS_ACTUAL]
+            return  round(float(self._units.temperature(temp, self.temperature_unit)), 1)
 
     @property
     def target_temperature(self):
-        temp = self._device._outlet.dps(DPS_TARGET)
-        if temp == None:
-            return None
-        return temp #round(float(self._device.temperature(temp)), 1)
+        if self._grill_data:
+            temp = self._grill_data["dps"][DPS_TARGET]
+            return round(float(self._units.temperature(temp, self.temperature_unit)), 1)
 
     @property
     def target_temperature_step(self):
-        if self.temperature_unit == TEMP_FAHRENHEIT:
+        if self.temperature_unit == UnitOfTemperature.FAHRENHEIT:
             return 5.0
         return 2.5
 
@@ -124,41 +123,15 @@ class RecteqClimate(climate.ClimateEntity):
     def target_temperature_low(self):
         return self.min_temp
 
-    def set_temperature(self, **kwargs):
-        mode = kwargs.get(ATTR_HVAC_MODE)
-        if mode != None:
-            self.set_hvac_mode(mode)
-
-        temp = kwargs.get(ATTR_TEMPERATURE)
-        if self._device.units.temperature_unit != TEMP_FAHRENHEIT:
-            if self._device.force_fahrenheit:
-                # undo HA's conversion
-                temp = METRIC_SYSTEM.temperature(temp, TEMP_FAHRENHEIT)
-            else:
-                temp = IMPERIAL_SYSTEM.temperature(temp, self._device.units.temperature_unit)
-        self._device.dps(DPS_TARGET, int(temp+0.5))
-
-    def set_hvac_mode(self, hvac_mode):
-        if hvac_mode == HVAC_MODE_HEAT:
-            self.turn_on()
-        elif hvac_mode == HVAC_MODE_OFF:
-            self.turn_off()
-        else:
-            raise Exception('Invalid hvac_mode; "{}"'.format(hvac_mode))
-
     @property
     def is_on(self):
-        return self._device.is_on
+        if self._grill_data:
+            return self._grill_data.get("dps", {}).get(DPS_POWER) == True
 
     @property
     def is_off(self):
-        return self._device.is_off
-
-    def turn_on(self):
-        self._device.dps(DPS_POWER, POWER_ON)
-
-    def turn_off(self):
-        self._device.dps(DPS_POWER, POWER_OFF)
+        if self._grill_data:
+            return self._grill_data.get("dps", {}).get(DPS_POWER) == False
 
     @property
     def supported_features(self):
@@ -166,40 +139,41 @@ class RecteqClimate(climate.ClimateEntity):
 
     @property
     def min_temp(self):
-        return round(self._device.temperature(TEMP_MIN), 1)
+        return round(float(self._units.temperature(TEMP_MIN, self.temperature_unit)), 1)
 
     @property
     def max_temp(self):
-        return round(self._device.temperature(TEMP_MAX), 1)
+        return round(float(self._units.temperature(TEMP_MAX, self.temperature_unit)), 1)
 
-    @property
-    def state_attributes(self):
-        data = { ATTR_TEMPERATURE: self.target_temperature }
-        if self.is_on:
-            data[ATTR_CURRENT_TEMPERATURE] = self.current_temperature
+    async def async_set_temperature(self, **kwargs):
+        mode = kwargs.get(ATTR_HVAC_MODE)
+        if mode != None:
+            self.set_hvac_mode(mode)
+
+        temp = kwargs.get(ATTR_TEMPERATURE)
+        if self._units.temperature_unit != UnitOfTemperature.FAHRENHEIT:
+            temp = IMPERIAL_SYSTEM.temperature(temp, self._device.units.temperature_unit)
+        self._device.set_status(DPS_TARGET, int(temp+0.5))
+        self._coordinator.async_request_refresh()
+
+    async def async_set_hvac_mode(self, hvac_mode):
+        if hvac_mode == HVAC_MODE_HEAT:
+            self.turn_on()
+        elif hvac_mode == HVAC_MODE_OFF:
+            self.turn_off()
         else:
-            data[ATTR_CURRENT_TEMPERATURE] = STATE_UNAVAILABLE
-        return data
+            raise Exception('Invalid hvac_mode; "{}"'.format(hvac_mode))
+        self._coordinator.async_request_refresh()
 
-    @property
-    def capability_attributes(self):
-        return {
-            ATTR_HVAC_MODES: self.hvac_modes,
-            ATTR_MIN_TEMP: self.min_temp,
-            ATTR_MAX_TEMP: self.max_temp,
-            ATTR_TARGET_TEMP_STEP: self.target_temperature_step,
-        }
+    async def async_turn_on(self):
+        self._device.set_status(DPS_POWER, POWER_ON)
+        self._coordinator.async_request_refresh()
 
-    @property
-    def should_poll(self):
-        return False
+    async def async_turn_off(self):
+        self._device.set_status(DPS_POWER, POWER_OFF)
+        self._coordinator.async_request_refresh()
 
-    async def async_update(self):
-        await self._device.async_request_refresh()
-
-    async def async_added_to_hass(self):
-        self.async_on_remove(self._device.async_add_listener(self._update_callback))
-
-    @callback
-    def _update_callback(self):
+    def _handle_coordinator_update(self):
+        self._grill_data = self._coordinator.data
+        self._attr_available = bool(self._grill_data) or False
         self.async_write_ha_state()

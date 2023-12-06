@@ -22,6 +22,7 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_HOST,
+    CONF_NAME,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -48,7 +49,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                 config_entry.data[CONF_DEVICE_ID],
                 config_entry.data[CONF_HOST],
                 config_entry.data[CONF_LOCAL_KEY],
-                config_entry.data[CONF_PROTOCOL]
+                config_entry.data[CONF_PROTOCOL],
+                config_entry.data[CONF_NAME]
             )
     except ConnectionError as err:
         raise ConfigEntryNotReady from err
@@ -56,8 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     recteq_coordinator = hass.data[DOMAIN][config_entry.entry_id] = RecteqCoordinator(
         hass, config_entry, device
     )
-    #most likely need this
-    #await recteq_coordinator.async_config_entry_first_refresh()
+    await recteq_coordinator.async_config_entry_first_refresh()
 
     for PLATFORM in PLATFORMS:
         hass.async_create_task(
@@ -66,16 +67,15 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    unload_ok = all(
-        await asyncio.gather(
+    unload_ok = all( await asyncio.gather(
             *[
                 hass.config_entries.async_forward_entry_unload(entry, PLATFORM)
                 for PLATFORM in PLATFORMS
             ]
         )
     )
-    if unload_ok:
-        await hass.data[DOMAIN].pop(entry.entry_id).shutdown()
+    if entry and unload_ok:
+        hass.data[DOMAIN].pop(entry.entry_id).shutdown()
 
     return unload_ok
 
