@@ -1,5 +1,4 @@
 """The Recteq integration."""
-import asyncio
 import logging
 import tinytuya
 import async_timeout
@@ -8,17 +7,10 @@ from datetime import timedelta
 from time import time
 from threading import Lock
 
-from .const import DOMAIN, CONF_NAME, DPS_ATTRS
+from .const import CONF_NAME
 
 from .const import (
-    CONF_DEVICE_ID,
-    CONF_FORCE_FAHRENHEIT,
-    CONF_IP_ADDRESS,
-    CONF_LOCAL_KEY,
     CONF_NAME,
-    CONF_PROTOCOL,
-    DOMAIN,
-    DPS_POWER,
 )
 from homeassistant.helpers import update_coordinator
 
@@ -28,14 +20,15 @@ UPDATE_INTERVAL = 30
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class RecteqGrill:
     """Wrap tinytuya.OutletDevice to cache status lock around polls."""
 
     def __init__(self, device_id, ip_address, local_key, protocol, name):
         self._device_id = self.unique_id = device_id
         self._ip_address = ip_address
-        self._local_key  = local_key
-        self._protocol   = protocol
+        self._local_key = local_key
+        self._protocol = protocol
         self._device = tinytuya.OutletDevice(device_id, ip_address, local_key)
         self._device.set_version(float(protocol))
         self._cached_status = None
@@ -54,9 +47,8 @@ class RecteqGrill:
                 status = self._device.status()
                 return status
             except ConnectionError:
-                if i+1 == MAX_RETRIES:
+                if i + 1 == MAX_RETRIES:
                     raise ConnectionError("Failed to update status.")
-
 
     def set_status(self, dps, value):
         self._cached_status = None
@@ -76,19 +68,20 @@ class RecteqGrill:
         finally:
             self._lock.release()
 
-    def shutdown(self):
+    def _shutdown(self):
         self._device.close()
 
 
 class RecteqCoordinator(update_coordinator.DataUpdateCoordinator):
-
     def __init__(self, hass, entry, grill: RecteqGrill):
-        super().__init__(hass, _LOGGER,
-            name = entry.data[CONF_NAME],
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=entry.data[CONF_NAME],
             update_interval=timedelta(seconds=UPDATE_INTERVAL),
         )
-        #self._name   = entry.data[CONF_NAME]
-        self._entry  = entry
+        # self._name   = entry.data[CONF_NAME]
+        self._entry = entry
         self.grill_device = grill
         self._hass = hass
 
@@ -99,10 +92,12 @@ class RecteqCoordinator(update_coordinator.DataUpdateCoordinator):
     async def _async_update_data(self):
         try:
             async with async_timeout.timeout(5):
-                data = await self._hass.async_add_executor_job(self.grill_device.get_status)
+                data = await self._hass.async_add_executor_job(
+                    self.grill_device.get_status
+                )
                 return data
         except ConnectionError as err:
             raise update_coordinator.UpdateFailed("Error fetching data") from err
 
-    def shutdown(self):
-        self.grill_device.shutdown()
+    def _shutdown(self):
+        self.grill_device._shutdown()

@@ -12,23 +12,15 @@ from homeassistant.helpers.update_coordinator import (
 
 from homeassistant.const import (
     CONF_NAME,
-    CONF_HOST,
 )
 
-import homeassistant.helpers.config_validation as cv
 from homeassistant.core import callback
 
-from custom_components.recteq.device import RecteqCoordinator, RecteqGrill
 
 from .const import (
-    __version__,
-    CONF_DEVICE_ID,
     CONF_LOCAL_KEY,
-    CONF_PROTOCOL,
     DOMAIN,
-    DPS_ACTUAL,
     DPS_POWER,
-    DPS_TARGET,
 )
 
 _LOGGER = logging.getLogger(__name__)

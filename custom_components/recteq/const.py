@@ -1,7 +1,5 @@
 """Constants for the Recteq integration."""
 
-import voluptuous as vol
-import homeassistant.helpers.config_validation as cv
 import homeassistant.const as hac
 
 PROJECT = "Recteq Custom Integration"

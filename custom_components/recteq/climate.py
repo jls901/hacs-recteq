@@ -29,8 +29,7 @@ from homeassistant.const import (
     PRECISION_WHOLE,
     UnitOfTemperature
 )
-from homeassistant.core import callback
-from homeassistant.util.unit_system import IMPERIAL_SYSTEM, METRIC_SYSTEM
+from homeassistant.util.unit_system import IMPERIAL_SYSTEM
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -162,7 +161,7 @@ class RecteqClimate(CoordinatorEntity, climate.ClimateEntity):
         elif hvac_mode == HVAC_MODE_OFF:
             self.turn_off()
         else:
-            raise Exception('Invalid hvac_mode; "{}"'.format(hvac_mode))
+            raise Exception(f'Invalid hvac_mode; "{hvac_mode}"')
         self._coordinator.async_request_refresh()
 
     async def async_turn_on(self):

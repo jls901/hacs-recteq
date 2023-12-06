@@ -11,14 +11,12 @@ from .const import (
     ISSUE_LINK,
     PLATFORMS,
     CONF_DEVICE_ID,
-    CONF_IP_ADDRESS,
     CONF_LOCAL_KEY,
     CONF_PROTOCOL
 )
 
 from .device import RecteqCoordinator, RecteqGrill
 
-from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_HOST,

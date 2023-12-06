@@ -1,8 +1,6 @@
 """Config flow for the Recteq integration."""
-import asyncio
 import logging
 import socket
-import string
 import uuid
 import voluptuous as vol
 from .const import (
@@ -46,7 +44,7 @@ class RecteqFlowHandler(config_entries.ConfigFlow):
 
             try:
                 socket.inet_aton(user_input[CONF_HOST])
-            except socket.error:
+            except OSError:
                 self._errors[CONF_HOST] = STR_INVALID_PREFIX + CONF_IP_ADDRESS
 
             user_input[CONF_DEVICE_ID] = user_input[CONF_DEVICE_ID].replace(" ", " ")

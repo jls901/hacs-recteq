@@ -17,7 +17,6 @@ from .const import (
 
 from homeassistant.core import callback
 from homeassistant.components import sensor
-from homeassistant.const import TEMP_FAHRENHEIT
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity
 )
