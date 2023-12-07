@@ -53,8 +53,7 @@ class RecteqGrill:
     def set_status(self, dps, value):
         self._cached_status = None
         self._cached_status_time = time()
-        self._cached_status = self._device.set_status(value, dps)
-        return self._cached_status
+        self._device.set_value(dps, value)
 
     def get_status(self):
         self._lock.acquire()

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "custom_componnts"
+name = "custom_components"
 version = "0.0.0"
 description = ""
 authors = ["James Smith"]

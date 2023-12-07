@@ -5,45 +5,47 @@ import homeassistant.const as hac
 PROJECT = "Recteq Custom Integration"
 
 VERSION_TUPLE = (0, 0, 0)
-VERSION = __version__ = '%d.%d.%d' % VERSION_TUPLE
+VERSION = __version__ = "%d.%d.%d" % VERSION_TUPLE
 
-__author__ = 'James Smith <>'
+__author__ = "James Smith <>"
 
-ISSUE_LINK = ''
+ISSUE_LINK = ""
 
-DOMAIN = 'recteq'
+DOMAIN = "recteq"
 
 PLATFORMS = ["switch", "climate", "sensor"]
 
-DPS_POWER  = '1'
-DPS_TARGET = '101'
-DPS_ACTUAL = '102'
-DPS_PROBEA = '105'
-DPS_PROBEB = '106'
-DPS_ERROR1 = '109'
-DPS_ERROR2 = '110'
-DPS_ERROR3 = '111'
+DPS_POWER = "1"
+DPS_TARGET = "101"
+DPS_ACTUAL = "102"
+DPS_PROBEA = "103"
+DPS_PROBEB = "104"
+DPS_MIN_FEED_RATE = "105"
+DPS_TEMP_ADJUST = "106"
+DPS_ERROR1 = "107"
+DPS_ERROR2 = "108"
+DPS_ERROR3 = "109"
 
-ATTR_POWER  = 'power'
-ATTR_TARGET = 'target'
-ATTR_ACTUAL = 'actual'
-ATTR_PROBEA = 'probe_a'
-ATTR_PROBEB = 'probe_b'
-ATTR_ERROR1 = 'error_1'
-ATTR_ERROR2 = 'error_2'
-ATTR_ERROR3 = 'error_3'
+ATTR_POWER = "power"
+ATTR_TARGET = "target"
+ATTR_ACTUAL = "actual"
+ATTR_PROBEA = "probe_a"
+ATTR_PROBEB = "probe_b"
+ATTR_ERROR1 = "error_1"
+ATTR_ERROR2 = "error_2"
+ATTR_ERROR3 = "error_3"
 
-NAME_POWER  = 'Power'
-NAME_TARGET = 'Target Temperature'
-NAME_ACTUAL = 'Actual Temperature'
-NAME_PROBEA = 'Probe A Temperature'
-NAME_PROBEB = 'Probe B Temperature'
-NAME_ERROR1 = 'Error E1'
-NAME_ERROR2 = 'Error E2'
-NAME_ERROR3 = 'Error E3'
+NAME_POWER = "Power"
+NAME_TARGET = "Target Temperature"
+NAME_ACTUAL = "Actual Temperature"
+NAME_PROBEA = "Probe A Temperature"
+NAME_PROBEB = "Probe B Temperature"
+NAME_ERROR1 = "Error E1"
+NAME_ERROR2 = "Error E2"
+NAME_ERROR3 = "Error E3"
 
 DPS_ATTRS = {
-    DPS_POWER:  ATTR_POWER,
+    DPS_POWER: ATTR_POWER,
     DPS_TARGET: ATTR_TARGET,
     DPS_ACTUAL: ATTR_ACTUAL,
     DPS_PROBEA: ATTR_PROBEA,
@@ -54,7 +56,7 @@ DPS_ATTRS = {
 }
 
 DPS_NAMES = {
-    DPS_POWER:  NAME_POWER,
+    DPS_POWER: NAME_POWER,
     DPS_TARGET: NAME_TARGET,
     DPS_ACTUAL: NAME_ACTUAL,
     DPS_PROBEA: NAME_PROBEA,
@@ -70,19 +72,19 @@ PROTOCOL_3_4 = "3.4"
 
 PROTOCOLS = [PROTOCOL_3_1, PROTOCOL_3_3, PROTOCOL_3_4]
 
-POWER_ON  = True
+POWER_ON = True
 POWER_OFF = False
 
 LEN_DEVICE_ID = 22
 LEN_LOCAL_KEY = 16
 
-CONF_NAME       = hac.CONF_NAME
+CONF_NAME = hac.CONF_NAME
 CONF_IP_ADDRESS = hac.CONF_IP_ADDRESS
-CONF_DEVICE_ID  = 'device_id'
-CONF_LOCAL_KEY  = 'local_key'
-CONF_PROTOCOL   = 'protocol'
-CONF_HOST   = 'ip_address'
-CONF_FORCE_FAHRENHEIT = 'force_fahrenheit'
+CONF_DEVICE_ID = "device_id"
+CONF_LOCAL_KEY = "local_key"
+CONF_PROTOCOL = "protocol"
+CONF_HOST = "ip_address"
+CONF_FORCE_FAHRENHEIT = "force_fahrenheit"
 
 DEFAULT_PROTOCOL = PROTOCOL_3_4
 
