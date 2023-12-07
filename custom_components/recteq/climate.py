@@ -124,12 +124,12 @@ class RecteqClimate(CoordinatorEntity, climate.ClimateEntity):
     @property
     def is_on(self):
         if self._grill_data:
-            return self._grill_data.get("dps", {}).get(DPS_POWER) == True
+            return self._grill_data.get("dps", {}).get(DPS_POWER) is True
 
     @property
     def is_off(self):
         if self._grill_data:
-            return self._grill_data.get("dps", {}).get(DPS_POWER) == False
+            return self._grill_data.get("dps", {}).get(DPS_POWER) or False
 
     @property
     def supported_features(self):

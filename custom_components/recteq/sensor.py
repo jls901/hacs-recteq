@@ -4,7 +4,6 @@ import logging
 
 from .const import (
     DOMAIN,
-    DPS_POWER,
     DPS_TARGET,
     DPS_ACTUAL,
     DPS_PROBEA,

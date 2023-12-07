@@ -8,10 +8,6 @@ from time import time
 from threading import Lock
 
 from .const import CONF_NAME
-
-from .const import (
-    CONF_NAME,
-)
 from homeassistant.helpers import update_coordinator
 
 MAX_RETRIES = 3
