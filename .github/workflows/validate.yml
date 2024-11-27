@@ -16,6 +16,9 @@ jobs:
     name: "Hassfest Validation"
     runs-on: "ubuntu-latest"
     steps:
+        - name: "Checkout the repository"
+          uses: "actions/checkout@4.1.7"
+
         - name: "Run hassfest validation"
           uses: "home-assistant/actions/hassfest@master"
 
@@ -23,6 +26,9 @@ jobs:
     name: "HACS Validation"
     runs-on: "ubuntu-latest"
     steps:
+        - name: "Checkout the repository"
+          uses: "actions/checkout@4.1.7"
+
         - name: "Run HACS validation"
           uses: "hacs/action@main"
           with:
