@@ -14,9 +14,6 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: "Checkout the repository"
-          uses: "actions/checkout@4.2.2"
-
       - name: "Adjust version number"
         shell: "bash"
         run: |
