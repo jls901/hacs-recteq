@@ -39,7 +39,7 @@ class RecteqTemperatureSensor(CoordinatorEntity, sensor.SensorEntity):
         super().__init__(coordinator)
         self._coordinator = coordinator
         self._device = self._coordinator.grill_device
-        self._device_class = sensor.DEVICE_CLASS_TEMPERATURE
+        self._device_class = sensor.SensorDeviceClass.TEMPERATURE
         self._dps_attr = dps
         self._native_value = (
             self._coordinator.data["dps"][self._dps_attr]
