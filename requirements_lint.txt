@@ -1,0 +1,2 @@
+-r requirements_common.txt
+ruff==0.15.21

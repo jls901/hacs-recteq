@@ -1,87 +1,73 @@
 """The Recteq sensor component."""
 
-import logging
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.const import UnitOfTemperature
 
 from .const import (
-    DOMAIN,
-    DPS_TARGET,
     DPS_ACTUAL,
     DPS_PROBEA,
     DPS_PROBEB,
-    NAME_TARGET,
+    DPS_TARGET,
     NAME_ACTUAL,
     NAME_PROBEA,
     NAME_PROBEB,
+    NAME_TARGET,
 )
+from .entity import RecteqEntity
 
-from homeassistant.core import callback
-from homeassistant.components import sensor
-from homeassistant.const import UnitOfTemperature
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-_LOGGER = logging.getLogger(__name__)
+    from .coordinator import RecteqCoordinator
+
+SENSORS = [
+    (DPS_TARGET, NAME_TARGET),
+    (DPS_ACTUAL, NAME_ACTUAL),
+    (DPS_PROBEA, NAME_PROBEA),
+    (DPS_PROBEB, NAME_PROBEB),
+]
 
 
-async def async_setup_entry(hass, entry, add):
-    coordinator = hass.data[DOMAIN][entry.entry_id]
-    add(
-        [
-            RecteqTemperatureSensor(coordinator, DPS_TARGET, NAME_TARGET),
-            RecteqTemperatureSensor(coordinator, DPS_ACTUAL, NAME_ACTUAL),
-            RecteqTemperatureSensor(coordinator, DPS_PROBEA, NAME_PROBEA),
-            RecteqTemperatureSensor(coordinator, DPS_PROBEB, NAME_PROBEB),
-        ]
+async def async_setup_entry(
+    hass: HomeAssistant,  # noqa: ARG001 Unused function argument: `hass`
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up the sensor platform."""
+    coordinator = entry.runtime_data.coordinator
+    async_add_entities(
+        RecteqTemperatureSensor(entry, coordinator, dps, name) for dps, name in SENSORS
     )
 
 
-class RecteqTemperatureSensor(CoordinatorEntity, sensor.SensorEntity):
-    def __init__(self, coordinator, dps, sensor_name):
-        super().__init__(coordinator)
-        self._coordinator = coordinator
-        self._device = self._coordinator.grill_device
-        self._device_class = sensor.SensorDeviceClass.TEMPERATURE
-        self._dps_attr = dps
-        self._native_value = (
-            self._coordinator.data["dps"][self._dps_attr]
-            if self._coordinator.data and "dps" in self._coordinator.data
-            else None
-        )
-        self._name = f"{self._device.name} {sensor_name}"
+class RecteqTemperatureSensor(RecteqEntity, SensorEntity):
+    """Temperature sensor for a Recteq grill DPS."""
+
+    _attr_device_class = SensorDeviceClass.TEMPERATURE
+    _attr_native_unit_of_measurement = UnitOfTemperature.FAHRENHEIT
+
+    def __init__(
+        self,
+        entry: ConfigEntry,
+        coordinator: RecteqCoordinator,
+        dps: str,
+        name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(entry, coordinator, f"{coordinator.grill.unique_id}.{dps}")
+        self._attr_name = name
+        self._dps = dps
 
     @property
-    def name(self):
-        return self._name
-
-    @property
-    def native_value(self):
-        return self._native_value
-
-    @property
-    def device_class(self):
-        return self._device_class
-
-    @property
-    def native_unit_of_measurement(self):
-        return UnitOfTemperature.FAHRENHEIT
-
-    @property
-    def unique_id(self):
-        return f"{self._device.unique_id}.{self._dps_attr}"
-
-    @property
-    def device_info(self) -> {}:
-        """Return the device info."""
-        return {
-            "identifiers": {(DOMAIN, self._device.unique_id)},
-            "name": self.name,
-        }
-
-    @callback
-    def _handle_coordinator_update(self):
-        if self._coordinator.data and "dps" in self._coordinator.data:
-            self._native_value = (
-                self.coordinator.data["dps"][self._dps_attr]
-                if self.coordinator.data
-                else None
-            )
-            self.async_write_ha_state()
+    def native_value(self) -> int | float | None:
+        """Return the sensor value."""
+        data = self.coordinator.data
+        if not data:
+            return None
+        return data.get("dps", {}).get(self._dps)

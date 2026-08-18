@@ -14,19 +14,24 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: "Checkout the repository"
+        uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+        with:
+          persist-credentials: false
+
       - name: "Adjust version number"
         shell: "bash"
         run: |
           yq -i -o json '.version="${{ github.event.release.tag_name }}"' \
-            "${{ github.workspace }}/custom_components/integration_blueprint/manifest.json"
+            "${{ github.workspace }}/custom_components/recteq/manifest.json"
 
       - name: "ZIP the integration directory"
         shell: "bash"
         run: |
-          cd "${{ github.workspace }}/custom_components/integration_blueprint"
-          zip integration_blueprint.zip -r ./
+          cd "${{ github.workspace }}/custom_components/recteq"
+          zip recteq.zip -r ./
 
       - name: "Upload the ZIP file to the release"
-        uses: softprops/action-gh-release@v0.1.15
+        uses: softprops/action-gh-release@v2.4.1
         with:
-          files: ${{ github.workspace }}/custom_components/integration_blueprint/integration_blueprint.zip
+          files: ${{ github.workspace }}/custom_components/recteq/recteq.zip

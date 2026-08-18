@@ -1,19 +1,18 @@
-[tool.poetry]
-name = "custom_components"
-version = "0.0.0"
-description = ""
-authors = ["James Smith"]
-readme = "README.md"
+[project]
+name = "recteq"
+version = "1.0.0"
+description = "Recteq grill integration for Home Assistant"
+requires-python = ">=3.14.2,<3.15"
+dependencies = [
+    "tinytuya==1.20.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.13.1,<3.14"
-colorlog = "^6.9.0"
-tinytuya = "^1.13.2"
-asyncio = "^3.4.3"
-ruff = "^0.9.9"
-homeassistant = "^2025.2.5"
+[dependency-groups]
+dev = [
+    "colorlog==6.10.1",
+    "homeassistant==2026.6.4",
+    "ruff==0.15.21",
+]
 
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.uv]
+package = false

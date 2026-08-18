@@ -5,15 +5,12 @@
     "@jls901"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/ludeeus/integration_blueprint",
+  "documentation": "https://github.com/jls901/hacs-recteq",
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/ludeeus/integration_blueprint/issues",
+  "issue_tracker": "https://github.com/jls901/hacs-recteq/issues",
   "requirements": [
-    "tinytuya",
-    "integrationhelper",
-    "voluptuous",
-    "asyncio"
+    "tinytuya==1.20.0"
   ],
   "version": "1.0.0"
 }

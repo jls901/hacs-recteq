@@ -1,85 +1,62 @@
-"""Recteq Switch Component."""
-import logging
+"""The Recteq switch component."""
 
-from homeassistant.components.switch import SwitchEntity, SwitchDeviceClass
+from __future__ import annotations
 
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from typing import TYPE_CHECKING
 
-from homeassistant.const import (
-    CONF_NAME,
-)
+from homeassistant.components.switch import SwitchDeviceClass, SwitchEntity
 
-from homeassistant.core import callback
+from .const import DPS_POWER, LOGGER, NAME_POWER
+from .entity import RecteqEntity
 
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import (
-    CONF_LOCAL_KEY,
-    DOMAIN,
-    DPS_POWER,
-)
-
-_LOGGER = logging.getLogger(__name__)
+    from .coordinator import RecteqCoordinator
 
 
-async def async_setup_entry(hass, config, add, discovery_info=None):
-    entity = RecteqPowerSwitchEntity(
-        hass.data[DOMAIN][config.entry_id],
-        config.data.get(CONF_NAME, DOMAIN + "_" + config.data.get(CONF_LOCAL_KEY)),
-    )
-    add([entity])
+async def async_setup_entry(
+    hass: HomeAssistant,  # noqa: ARG001 Unused function argument: `hass`
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up the switch platform."""
+    coordinator = entry.runtime_data.coordinator
+    async_add_entities([RecteqPowerSwitch(entry, coordinator)])
 
 
-class RecteqPowerSwitchEntity(CoordinatorEntity, SwitchEntity):
-    """The Recteq switch to turn the unit on and off."""
+class RecteqPowerSwitch(RecteqEntity, SwitchEntity):
+    """Switch to turn the Recteq grill on and off."""
 
-    def __init__(self, coordinator, name):
-        super().__init__(coordinator)
-        self._coordinator = coordinator
-        self._device = coordinator.grill_device
-        self._name = f"{self._device.name} Power"
-        self._is_on = (
-            self._coordinator.data["dps"][DPS_POWER]
-            if self._coordinator.data and "dps" in self._coordinator.data
-            else False
-        )
-        self._device_class = SwitchDeviceClass.OUTLET
+    _attr_device_class = SwitchDeviceClass.OUTLET
+    _attr_name = NAME_POWER
+
+    def __init__(
+        self,
+        entry: ConfigEntry,
+        coordinator: RecteqCoordinator,
+    ) -> None:
+        """Initialize the switch."""
+        super().__init__(entry, coordinator, f"{coordinator.grill.unique_id}.power")
 
     @property
-    def device_class(self):
-        return self._device_class
+    def is_on(self) -> bool:
+        """Return True if the grill is powered on."""
+        data = self.coordinator.data
+        if not data:
+            return False
+        return bool(data.get("dps", {}).get(DPS_POWER))
 
-    @property
-    def unique_id(self):
-        return f"{self._device.unique_id}.power"
+    async def async_turn_on(self) -> None:
+        """Turn the grill on."""
+        LOGGER.debug("Switching %s ON", self.config_entry.title)
+        self.coordinator.grill.set_status(DPS_POWER, value=True)
+        await self.coordinator.async_request_refresh()
 
-    @property
-    def device_info(self) -> {}:
-        """Return the device info."""
-        return {
-            "identifiers": {(DOMAIN, self._device.unique_id)},
-            "name": self.name,
-        }
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def is_on(self):
-        return self._is_on
-
-    async def async_turn_on(self, **kwargs):
-        _LOGGER.debug("Switching %s ON", self._name)
-        self._device.set_status(DPS_POWER, True)
-        await self._coordinator.async_request_refresh()
-
-    async def async_turn_off(self, **kwargs):
-        _LOGGER.debug("Switching %s OFF", self._name)
-        self._device.set_status(DPS_POWER, False)
-        await self._coordinator.async_request_refresh()
-
-    @callback
-    def _handle_coordinator_update(self):
-        if self._coordinator.data and "dps" in self._coordinator.data:
-            self._is_on = self._coordinator.data["dps"][DPS_POWER]
-            self.async_write_ha_state()
+    async def async_turn_off(self) -> None:
+        """Turn the grill off."""
+        LOGGER.debug("Switching %s OFF", self.config_entry.title)
+        self.coordinator.grill.set_status(DPS_POWER, value=False)
+        await self.coordinator.async_request_refresh()

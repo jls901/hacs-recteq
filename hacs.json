@@ -1,6 +1,5 @@
 {
-    "name": "Recteq",
-    "filename": "recteq.zip",
-    "homeassistant": "2024.6.0",
-    "zip_release": true
+  "name": "Recteq",
+  "homeassistant": "2024.6.0",
+  "hacs": "2.0.0"
 }

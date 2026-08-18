@@ -1,79 +1,51 @@
 """The Recteq integration."""
 
-import logging
-import async_timeout
-import asyncio
+from __future__ import annotations
 
-from .const import (
-    DOMAIN,
-    PROJECT,
-    VERSION,
-    ISSUE_LINK,
-    PLATFORMS,
-    CONF_DEVICE_ID,
-    CONF_LOCAL_KEY,
-    CONF_PROTOCOL
-)
+from typing import TYPE_CHECKING
 
-from .device import RecteqCoordinator, RecteqGrill
-
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    CONF_HOST,
-    CONF_NAME,
-)
-from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_HOST
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from integrationhelper.const import CC_STARTUP_VERSION
+from .api import RecteqGrill
+from .const import (
+    CONF_DEVICE_ID,
+    CONF_LOCAL_KEY,
+    CONF_PROTOCOL,
+    PLATFORMS,
+)
+from .coordinator import RecteqCoordinator
+from .data import RecteqData
 
-_LOGGER = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
 
-async def async_setup(hass: HomeAssistant, config):
-    hass.data[DOMAIN] = {}
 
-    _LOGGER.info(CC_STARTUP_VERSION.format(
-        name=PROJECT,
-        version=VERSION,
-        issue_link=ISSUE_LINK
-    ))
-
-    return True
-
-async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up Recteq from a config entry."""
     try:
-        async with async_timeout.timeout(10):
-            device = RecteqGrill(
-                config_entry.data[CONF_DEVICE_ID],
-                config_entry.data[CONF_HOST],
-                config_entry.data[CONF_LOCAL_KEY],
-                config_entry.data[CONF_PROTOCOL],
-                config_entry.data[CONF_NAME]
-            )
+        grill = RecteqGrill(
+            entry.data[CONF_DEVICE_ID],
+            entry.data[CONF_HOST],
+            entry.data[CONF_LOCAL_KEY],
+            entry.data[CONF_PROTOCOL],
+        )
     except ConnectionError as err:
         raise ConfigEntryNotReady from err
 
-    recteq_coordinator = hass.data[DOMAIN][config_entry.entry_id] = RecteqCoordinator(
-        hass, config_entry, device
-    )
-    await recteq_coordinator.async_config_entry_first_refresh()
+    coordinator = RecteqCoordinator(hass, entry, grill)
+    await coordinator.async_config_entry_first_refresh()
+    entry.runtime_data = RecteqData(grill=grill, coordinator=coordinator)
 
-    for PLATFORM in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(config_entry, PLATFORM)
-        )
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    unload_ok = all( await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, PLATFORM)
-                for PLATFORM in PLATFORMS
-            ]
-        )
-    )
-    if entry and unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id).shutdown()
 
-    return unload_ok
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    if not await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        return False
 
+    entry.runtime_data.coordinator.shutdown()
+    return True
