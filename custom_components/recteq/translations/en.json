@@ -8,8 +8,8 @@
         "data": {
           "name": "Friendly Name; i.e. \"RT-590\" or \"Smoker\"",
           "host": "Host",
-          "device_id": "Device ID (22 hex digits)",
-          "local_key": "Local Key (16 hex digits)",
+          "device_id": "Device ID (22 characters)",
+          "local_key": "Local Key (16 characters)",
           "protocol": "Protocol Version"
         }
       }
@@ -17,8 +17,8 @@
     "error": {
       "please_correct": "Please correct the errors below.",
       "invalid_host": "The Host is invalid. Please enter a valid '#.#.#.#' IPv4 address.",
-      "invalid_device_id": "The Device ID is invalid. Please enter 22 hex digits.",
-      "invalid_local_key": "The Local Key is invalid. Please enter 16 hex digits.",
+      "invalid_device_id": "The Device ID is invalid. It must be exactly 22 characters. If copied from the Tuya app, it may contain hidden characters - paste it into a plain text editor first.",
+      "invalid_local_key": "The Local Key is invalid. It must be exactly 16 characters. If copied from the Tuya app, it may contain hidden characters - paste it into a plain text editor first.",
       "invalid_protocol": "The Protocol is invalid. Please enter 3.1, 3.3, or 3.4."
     }
   },

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+import re
 import socket
-import string
 from typing import TYPE_CHECKING
 
 import voluptuous as vol
@@ -31,9 +31,17 @@ if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
 
 
-def _is_hex(value: str, length: int) -> bool:
-    """Return True if value is exactly length hex digits."""
-    return len(value) == length and all(c in string.hexdigits for c in value)
+_INVISIBLE_RE = re.compile(r"[\s\u200b\u2060\ufeff]")
+
+
+def _clean(value: str) -> str:
+    """Remove whitespace and invisible characters (Tuya app copy/paste)."""
+    return _INVISIBLE_RE.sub("", value)
+
+
+def _has_length(value: str, length: int) -> bool:
+    """Return True if value is exactly length characters."""
+    return len(value) == length
 
 
 class RecteqConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -48,18 +56,18 @@ class RecteqConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            user_input[CONF_DEVICE_ID] = user_input[CONF_DEVICE_ID].strip()
-            user_input[CONF_LOCAL_KEY] = user_input[CONF_LOCAL_KEY].strip()
+            user_input[CONF_DEVICE_ID] = _clean(user_input[CONF_DEVICE_ID])
+            user_input[CONF_LOCAL_KEY] = _clean(user_input[CONF_LOCAL_KEY])
 
             try:
                 socket.inet_aton(user_input[CONF_HOST])
             except OSError:
                 errors[CONF_HOST] = f"{STR_INVALID_PREFIX}{CONF_HOST}"
 
-            if not _is_hex(user_input[CONF_DEVICE_ID], LEN_DEVICE_ID):
+            if not _has_length(user_input[CONF_DEVICE_ID], LEN_DEVICE_ID):
                 errors[CONF_DEVICE_ID] = f"{STR_INVALID_PREFIX}{CONF_DEVICE_ID}"
 
-            if not _is_hex(user_input[CONF_LOCAL_KEY], LEN_LOCAL_KEY):
+            if not _has_length(user_input[CONF_LOCAL_KEY], LEN_LOCAL_KEY):
                 errors[CONF_LOCAL_KEY] = f"{STR_INVALID_PREFIX}{CONF_LOCAL_KEY}"
 
             if user_input[CONF_PROTOCOL] not in PROTOCOLS:
