@@ -1,10 +1,9 @@
 {
   "config": {
-    "title": "Recteq",
     "step": {
       "user": {
         "title": "Recteq Grill",
-        "description": "Enter the name and communication parameters for your Recteq grill.\n\nVisit [the wiki](https://github.com/pdugas/homeassistant-recteq/wiki) for assistance figuring out these values.",
+        "description": "Enter the name and communication parameters for your Recteq grill. See the README of this repository for assistance figuring out these values.",
         "data": {
           "name": "Friendly Name; i.e. \"RT-590\" or \"Smoker\"",
           "host": "Host",
