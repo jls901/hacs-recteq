@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
 
 from homeassistant.components.climate import (
@@ -126,15 +127,23 @@ class RecteqClimate(RecteqEntity, ClimateEntity):
         temp = kwargs.get(ATTR_TEMPERATURE)
         if self.temperature_unit != UnitOfTemperature.FAHRENHEIT:
             temp = IMPERIAL_SYSTEM.temperature(temp, self.temperature_unit)
-        self.coordinator.grill.set_status(DPS_TARGET, value=int(temp + 0.5))
+        await self.hass.async_add_executor_job(
+            partial(
+                self.coordinator.grill.set_status, DPS_TARGET, value=int(temp + 0.5)
+            )
+        )
         await self.coordinator.async_request_refresh()
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set the HVAC mode."""
         if hvac_mode == HVACMode.HEAT:
-            self.coordinator.grill.set_status(DPS_POWER, value=True)
+            await self.hass.async_add_executor_job(
+                partial(self.coordinator.grill.set_status, DPS_POWER, value=True)
+            )
         elif hvac_mode == HVACMode.OFF:
-            self.coordinator.grill.set_status(DPS_POWER, value=False)
+            await self.hass.async_add_executor_job(
+                partial(self.coordinator.grill.set_status, DPS_POWER, value=False)
+            )
         else:
             err = f'Invalid hvac_mode; "{hvac_mode}"'
             raise ValueError(err)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
 
 from homeassistant.components.switch import SwitchDeviceClass, SwitchEntity
@@ -52,11 +53,15 @@ class RecteqPowerSwitch(RecteqEntity, SwitchEntity):
     async def async_turn_on(self) -> None:
         """Turn the grill on."""
         LOGGER.debug("Switching %s ON", self.config_entry.title)
-        self.coordinator.grill.set_status(DPS_POWER, value=True)
+        await self.hass.async_add_executor_job(
+            partial(self.coordinator.grill.set_status, DPS_POWER, value=True)
+        )
         await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self) -> None:
         """Turn the grill off."""
         LOGGER.debug("Switching %s OFF", self.config_entry.title)
-        self.coordinator.grill.set_status(DPS_POWER, value=False)
+        await self.hass.async_add_executor_job(
+            partial(self.coordinator.grill.set_status, DPS_POWER, value=False)
+        )
         await self.coordinator.async_request_refresh()

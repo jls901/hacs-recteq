@@ -59,9 +59,10 @@ class RecteqGrill:
 
     def set_status(self, dps: str, *, value: int | bool) -> None:
         """Set a DPS value and invalidate the cached status."""
-        self._cached_status = None
-        self._cached_status_time = None
-        self._device.set_value(dps, value)
+        with self._lock:
+            self._cached_status = None
+            self._cached_status_time = None
+            self._device.set_value(dps, value)
 
     def shutdown(self) -> None:
         """Close the underlying device."""
