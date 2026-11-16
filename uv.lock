@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.14.2, <3.15"
 
 [[package]]
@@ -1579,7 +1579,7 @@ wheels = [
 
 [[package]]
 name = "recteq"
-version = "1.0.0"
+version = "1.0.3"
 source = { virtual = "." }
 dependencies = [
     { name = "tinytuya" },
@@ -1593,7 +1593,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "tinytuya", specifier = "==1.20.0" }]
+requires-dist = [{ name = "tinytuya", specifier = "==1.21.1" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -1810,16 +1810,16 @@ wheels = [
 
 [[package]]
 name = "tinytuya"
-version = "1.20.0"
+version = "1.21.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama" },
     { name = "cryptography" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/68/ba/4199064373d6aa310e32e69b2c397937b4c25f5f8862a514ecdaeb34fe36/tinytuya-1.20.0.tar.gz", hash = "sha256:54bfcd0b3411ae4c94cf473e1ca28a2ffa4d376ed2d8e7e4e4adfcdf4ca1657c", size = 190632, upload-time = "2026-07-06T04:39:14.342Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/cd/24f3ed6548c29e71699b29135147067ce709a3592293cfd4c6869f717531/tinytuya-1.21.1.tar.gz", hash = "sha256:037fd2e11f6bb2a1b879cfba226fa7e925fa43d42be52d718885bba3777b2ce7", size = 200736, upload-time = "2026-11-12T07:18:42.037Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d7/87/3b1ac3cae266e82bf40cbc5cccb7a80e0c28b9a0b65a4ad9b088e190d507/tinytuya-1.20.0-py3-none-any.whl", hash = "sha256:ac5650c30f1153b1eae0b8d75f67043fb2397a168d3834e47da2d88d2c08c722", size = 170518, upload-time = "2026-07-06T04:39:12.997Z" },
+    { url = "https://files.pythonhosted.org/packages/14/f2/076ab26f7227427aef41cc960c38a5b3526cdc5562e29e71c3aba7243db6/tinytuya-1.21.1-py3-none-any.whl", hash = "sha256:2239b7fb1cfcb67705d5cedec5409e19af0b21c3d097f65416ae7cd5ec2d9fb0", size = 178290, upload-time = "2026-11-12T07:18:40.525Z" },
 ]
 
 [[package]]
